@@ -245,3 +245,4 @@ def main(window, width):
 	pygame.quit()
 
 main(WINDOW, WIDTH)
+# changed 
