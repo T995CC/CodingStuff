@@ -1,10 +1,12 @@
 import pygame
 import math
 from queue import PriorityQueue
+pygame.init()
 
 WIDTH = 600
+HEIGHT = 650
 ROWS = 40
-WINDOW = pygame.display.set_mode((WIDTH, WIDTH))
+WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("A* Path Finding Visualizer")
 
 RED = (255, 0, 0)
@@ -16,7 +18,7 @@ BLACK = (0, 0, 0)
 PURPLE = (128, 0, 128)
 ORANGE = (255, 165 ,0)
 GREY = (128, 128, 128)
-TURQUOISE = (64, 224, 250)      #CUSTOM COLOR
+TURQUOISE = (64, 224, 250)	  #CUSTOM COLOR
 
 class Node:
 	def __init__(self, row, col, width, total_rows):
@@ -74,23 +76,23 @@ class Node:
 
 	def update_nieghbors(self, grid):
 		self.neighbors = []
-		if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier():      #DOWN
+		if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier():	  #DOWN
 			self.neighbors.append(grid[self.row + 1][self.col])
 		
-		if self.row > 0 and not grid[self.row - 1][self.col].is_barrier():                        #UP
+		if self.row > 0 and not grid[self.row - 1][self.col].is_barrier():						#UP
 			self.neighbors.append(grid[self.row - 1][self.col])
 
-		if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier():      #RIGHT
+		if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier():	  #RIGHT
 			self.neighbors.append(grid[self.row][self.col + 1])
 
-		if self.col > 0 and not grid[self.row][self.col - 1].is_barrier():                        #LEFT
+		if self.col > 0 and not grid[self.row][self.col - 1].is_barrier():						#LEFT
 			self.neighbors.append(grid[self.row][self.col - 1])
 
 	def __lt__(self, other):
 		return False
 
 	
-def h(p1, p2):             #Heuristic function
+def h(p1, p2):			 #Heuristic function
 	x1, y1 = p1
 	x2, y2 = p2
 	return abs(x1- x2) + abs(y1 - y2)
@@ -166,7 +168,7 @@ def make_grid(rows, width):
 
 def draw_gridlines(window, rows, width):
 	gap = width // rows
-	for i in range(rows):
+	for i in range(rows + 1):
 		pygame.draw.line(window, GREY, (0, i * gap), (width, i * gap))
 		for j in range(rows):
 			pygame.draw.line(window, GREY, (j * gap, 0), (j * gap, width))
@@ -179,6 +181,7 @@ def draw(window, grid, rows, width):
 			node.draw(window)
 
 	draw_gridlines(window, rows, width)
+	redrawbuttons()
 	pygame.display.update()
 
 def get_clicked_pos(pos, rows, width):
@@ -190,7 +193,50 @@ def get_clicked_pos(pos, rows, width):
 
 	return row, col
 
+
+#BUTTONS
+
+
+class Button():
+	def __init__(self, color, x,y,width,height, text=''):
+		self.color = color
+		self.x = x
+		self.y = y
+		self.width = width
+		self.height = height
+		self.text = text
+
+	def draw_button(self,WINDOW,outline=None):
+		#Call this method to draw the button on the screen
+		if outline:
+			pygame.draw.rect(WINDOW, outline, (self.x-2,self.y-2,self.width+4,self.height+4),0)
+			
+		pygame.draw.rect(WINDOW, self.color, (self.x,self.y,self.width,self.height),0)
+		
+		if self.text != '':
+			font = pygame.font.SysFont('ocraextended', 20)
+			text = font.render(self.text, 1, WHITE)
+			WINDOW.blit(text, (self.x + (self.width//2 - text.get_width()//2), self.y + (self.height//2 - text.get_height()//2)))
+
+	def isOver(self, pos):
+		#Pos is the mouse position or a tuple of (x,y) coordinates
+		if pos[0] > self.x and pos[0] < self.x + self.width:
+			if pos[1] > self.y and pos[1] < self.y + self.height:
+				return True
+			
+		return False
+
+
+save_button = Button(BLACK, 300, 608, 140, 34, 'Save Grid')
+load_button = Button(BLACK, 450, 608, 140, 34, 'Load Grid')
+
+def redrawbuttons():
+	save_button.draw_button(WINDOW)
+	load_button.draw_button(WINDOW)
+
+
 def main(window, width):
+	#print(pygame.font.get_fonts())
 	grid = make_grid(ROWS, width)
 	start = None
 	end = None
@@ -203,10 +249,13 @@ def main(window, width):
 				run = False
 
 
-			if pygame.mouse.get_pressed()[0]:     #LEFT MOUSE BUTTON
+			if pygame.mouse.get_pressed()[0]:	 #LEFT MOUSE BUTTON
 				pos = pygame.mouse.get_pos()
 				row, col = get_clicked_pos(pos, ROWS, width)
-				node = grid[row][col]
+				try:
+					node = grid[row][col]
+				except:
+					continue
 				if not start and node != end:
 					start = node
 					start.make_start()
@@ -220,7 +269,10 @@ def main(window, width):
 			elif pygame.mouse.get_pressed()[2]:   #RIGHT MOUSE BUTTON
 				pos = pygame.mouse.get_pos()
 				row, col = get_clicked_pos(pos, ROWS, width)
-				node = grid[row][col]
+				try:
+					node = grid[row][col]
+				except:
+					continue
 				node.reset()
 				if node == start:
 					start = None
@@ -228,7 +280,7 @@ def main(window, width):
 					end = None
 			
 			if event.type == pygame.KEYDOWN:
-				if event.key == pygame.K_SPACE and start and end:     #SPACEBAR
+				if event.key == pygame.K_SPACE and start and end:	 #SPACEBAR
 					for row in grid:
 						for node in row:
 							node.update_nieghbors(grid)
@@ -236,10 +288,11 @@ def main(window, width):
 					algorithm(lambda: draw(window, grid, ROWS, width), grid, start, end)
 
 
-				if event.key == pygame.K_r:         #KEY 'r'
+				if event.key == pygame.K_r:		 #KEY 'r'
 					start = None
 					end = None
 					grid = make_grid(ROWS, width)
+
 
 
 	pygame.quit()
