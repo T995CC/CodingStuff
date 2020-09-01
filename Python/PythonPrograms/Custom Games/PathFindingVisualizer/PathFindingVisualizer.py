@@ -8,11 +8,12 @@ HEIGHT = 660
 ROWS = 40
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("A* Path Finding Visualizer")
-font_button = pygame.font.SysFont('ocraextended', 17, bold = 1, italic = 1)
+font_button = pygame.font.SysFont('ocraextended', 17, bold = 1, italic = 0)
 font_screen = pygame.font.SysFont('ocraextended', 13, italic = 1)
 
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
+DARKGREEN = (0, 110, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
@@ -20,7 +21,8 @@ BLACK = (0, 0, 0)
 PURPLE = (128, 0, 128)
 ORANGE = (255, 165 ,0)
 GREY = (128, 128, 128)
-TURQUOISE = (64, 224, 250)	  #CUSTOM COLOR
+DARKGREY = (77, 77, 77)
+CYAN = (64, 224, 250)	  #CUSTOM COLOR
 
 controls_text1 = 'LEFT MOUSE CLICK: Place Start/End/Barrier'
 controls_text2 = 'RIGHT MOUSE CLICK: Remove Start/End/Barrier'
@@ -54,7 +56,7 @@ class Node:
 		return self.color == ORANGE
 
 	def is_end(self):
-		return self.color == TURQUOISE
+		return self.color == CYAN
 
 	def reset(self):
 		self.color = WHITE
@@ -72,7 +74,7 @@ class Node:
 		self.color = ORANGE
 
 	def make_end(self):
-		self.color = TURQUOISE
+		self.color = CYAN
 
 	def make_path(self):
 		self.color = GREEN
@@ -217,7 +219,7 @@ class Button():
 		self.height = height
 		self.text = text
 
-	def draw_button(self,WINDOW,outline=None):
+	def draw_button(self,WINDOW,outline=GREY):
 		#Call this method to draw the button on the screen
 		if outline:
 			pygame.draw.rect(WINDOW, outline, (self.x-2,self.y-2,self.width+4,self.height+4),0)
@@ -259,13 +261,26 @@ def main(window, width):
 		draw(window, grid, ROWS, width)
 		for event in pygame.event.get():
 
+			pos = pygame.mouse.get_pos()
+
 			if event.type == pygame.QUIT:
 				run = False
 
+			if event.type == pygame.MOUSEMOTION:
+				if save_button.isOver(pos):
+					save_button.color = DARKGREY
+				else:
+					save_button.color = BLACK
+
+				if load_button.isOver(pos):
+					load_button.color = DARKGREY
+				else:
+					load_button.color = BLACK
+
 
 			if pygame.mouse.get_pressed()[0]:	 #LEFT MOUSE BUTTON
-				pos = pygame.mouse.get_pos()
-				row, col = get_clicked_pos(pos, ROWS, width)
+				pos1 = pygame.mouse.get_pos()
+				row, col = get_clicked_pos(pos1, ROWS, width)
 				try:
 					node = grid[row][col]
 				except:
@@ -281,8 +296,8 @@ def main(window, width):
 
 
 			elif pygame.mouse.get_pressed()[2]:   #RIGHT MOUSE BUTTON
-				pos = pygame.mouse.get_pos()
-				row, col = get_clicked_pos(pos, ROWS, width)
+				pos1 = pygame.mouse.get_pos()
+				row, col = get_clicked_pos(pos1, ROWS, width)
 				try:
 					node = grid[row][col]
 				except:
