@@ -1,5 +1,6 @@
 import pygame
 import math
+import time
 from queue import PriorityQueue
 pygame.init()
 
@@ -8,8 +9,8 @@ HEIGHT = 660
 ROWS = 40
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("A* Path Finding Visualizer")
-font_button = pygame.font.SysFont('ocraextended', 17, bold = 1, italic = 0)
-font_screen = pygame.font.SysFont('ocraextended', 13, italic = 1)
+font_button = pygame.font.SysFont('ocraextended', 17, bold = 1)
+font_screen = pygame.font.SysFont('ocraextended', 13)
 
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
@@ -257,6 +258,7 @@ def main(window, width):
 	start = None
 	end = None
 	run = True
+	clicked = False
 	while run:
 		draw(window, grid, ROWS, width)
 		for event in pygame.event.get():
@@ -266,7 +268,7 @@ def main(window, width):
 			if event.type == pygame.QUIT:
 				run = False
 
-			if event.type == pygame.MOUSEMOTION:
+			if event.type == pygame.MOUSEMOTION and clicked == False:
 				if save_button.isOver(pos):
 					save_button.color = DARKGREY
 				else:
@@ -276,6 +278,22 @@ def main(window, width):
 					load_button.color = DARKGREY
 				else:
 					load_button.color = BLACK
+
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				clicked = True
+				if save_button.isOver(pos):
+					save_button.color = DARKGREEN
+				if load_button.isOver(pos):
+					load_button.color = DARKGREEN
+
+			if event.type == pygame.MOUSEBUTTONUP:
+				clicked = False
+				if save_button.isOver(pos):
+					save_button.color = DARKGREY
+					print("lol")
+				if load_button.isOver(pos):
+					load_button.color = DARKGREY
+					print("hola")
 
 
 			if pygame.mouse.get_pressed()[0]:	 #LEFT MOUSE BUTTON
