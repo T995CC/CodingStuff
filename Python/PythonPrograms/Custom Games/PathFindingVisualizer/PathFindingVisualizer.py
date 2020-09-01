@@ -4,10 +4,12 @@ from queue import PriorityQueue
 pygame.init()
 
 WIDTH = 600
-HEIGHT = 650
+HEIGHT = 660
 ROWS = 40
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("A* Path Finding Visualizer")
+font_button = pygame.font.SysFont('ocraextended', 17, bold = 1, italic = 1)
+font_screen = pygame.font.SysFont('ocraextended', 13, italic = 1)
 
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
@@ -19,6 +21,11 @@ PURPLE = (128, 0, 128)
 ORANGE = (255, 165 ,0)
 GREY = (128, 128, 128)
 TURQUOISE = (64, 224, 250)	  #CUSTOM COLOR
+
+controls_text1 = 'LEFT MOUSE CLICK: Place Start/End/Barrier'
+controls_text2 = 'RIGHT MOUSE CLICK: Remove Start/End/Barrier'
+controls_text3 = 'SPACEBAR: Start algorithm'
+controls_text4 = 'R: Reset Grid'
 
 class Node:
 	def __init__(self, row, col, width, total_rows):
@@ -182,6 +189,10 @@ def draw(window, grid, rows, width):
 
 	draw_gridlines(window, rows, width)
 	redrawbuttons()
+	message(controls_text1, BLACK, 4, 603)
+	message(controls_text2, BLACK, 4, 616)
+	message(controls_text3, BLACK, 4, 629)
+	message(controls_text4, BLACK, 4, 642)
 	pygame.display.update()
 
 def get_clicked_pos(pos, rows, width):
@@ -214,8 +225,7 @@ class Button():
 		pygame.draw.rect(WINDOW, self.color, (self.x,self.y,self.width,self.height),0)
 		
 		if self.text != '':
-			font = pygame.font.SysFont('ocraextended', 20)
-			text = font.render(self.text, 1, WHITE)
+			text = font_button.render(self.text, 1, WHITE)
 			WINDOW.blit(text, (self.x + (self.width//2 - text.get_width()//2), self.y + (self.height//2 - text.get_height()//2)))
 
 	def isOver(self, pos):
@@ -227,12 +237,16 @@ class Button():
 		return False
 
 
-save_button = Button(BLACK, 300, 608, 140, 34, 'Save Grid')
-load_button = Button(BLACK, 450, 608, 140, 34, 'Load Grid')
+save_button = Button(BLACK, 354, 610, 115, 40, 'Save Grid')
+load_button = Button(BLACK, 477, 610, 115, 40, 'Load Grid')
 
 def redrawbuttons():
 	save_button.draw_button(WINDOW)
 	load_button.draw_button(WINDOW)
+
+def message(msg, color, x, y):
+	screen_text = font_screen.render(msg, 1, color)
+	WINDOW.blit(screen_text, (x, y))
 
 
 def main(window, width):
@@ -292,7 +306,6 @@ def main(window, width):
 					start = None
 					end = None
 					grid = make_grid(ROWS, width)
-
 
 
 	pygame.quit()
