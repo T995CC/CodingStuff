@@ -1,28 +1,35 @@
 import pygame
 import math
-import time
+import pickle
+import os
 from queue import PriorityQueue
 pygame.init()
 
+
 WIDTH = 600
+WIDTH_whole = 900
 HEIGHT = 660
+
 ROWS = 40
-WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
+WINDOW = pygame.display.set_mode((WIDTH_whole, HEIGHT))
 pygame.display.set_caption("A* Path Finding Visualizer")
+font_box = pygame.font.SysFont('ocraextended', 20)
 font_button = pygame.font.SysFont('ocraextended', 17, bold = 1)
 font_screen = pygame.font.SysFont('ocraextended', 13)
 
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
+LIGHTGREEN = (125, 255, 125)
 DARKGREEN = (0, 110, 0)
 BLUE = (0, 0, 255)
+LIGHTBLUE = (125, 125, 255)
 YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 PURPLE = (128, 0, 128)
 ORANGE = (255, 165 ,0)
 GREY = (128, 128, 128)
-DARKGREY = (77, 77, 77)
+DARKGREY = (40,40,40)
 CYAN = (64, 224, 250)	  #CUSTOM COLOR
 
 controls_text1 = 'LEFT MOUSE CLICK: Place Start/End/Barrier'
@@ -180,10 +187,11 @@ def draw_gridlines(window, rows, width):
 	gap = width // rows
 	for i in range(rows + 1):
 		pygame.draw.line(window, GREY, (0, i * gap), (width, i * gap))
-		for j in range(rows):
+		for j in range(rows + 1):
 			pygame.draw.line(window, GREY, (j * gap, 0), (j * gap, width))
 
-def draw(window, grid, rows, width):
+
+def draw(window, grid, rows, width, colorbox, txt_surface):
 	window.fill(WHITE)
 
 	for row in grid:
@@ -192,10 +200,21 @@ def draw(window, grid, rows, width):
 
 	draw_gridlines(window, rows, width)
 	redrawbuttons()
+
+	pygame.draw.rect(WINDOW, colorbox, input_box, 2)
+	WINDOW.blit(txt_surface, (input_box.x+5, input_box.y+5))
+
 	message(controls_text1, BLACK, 4, 603)
 	message(controls_text2, BLACK, 4, 616)
 	message(controls_text3, BLACK, 4, 629)
 	message(controls_text4, BLACK, 4, 642)
+
+	pygame.draw.line(window, GREY, (610, 0), (890, 0), 1)
+	pygame.draw.line(window, GREY, (610, 650), (890, 650), 1)
+	pygame.draw.line(window, GREY, (610, 0), (610, 650), 1)
+	pygame.draw.line(window, GREY, (890, 0), (890, 650), 1)
+	
+
 	pygame.display.update()
 
 def get_clicked_pos(pos, rows, width):
@@ -240,8 +259,8 @@ class Button():
 		return False
 
 
-save_button = Button(BLACK, 354, 610, 115, 40, 'Save Grid')
-load_button = Button(BLACK, 477, 610, 115, 40, 'Load Grid')
+save_button = Button(BLACK, 356, 610, 115, 40, 'Save Grid')
+load_button = Button(BLACK, 485, 610, 115, 40, 'Load Grid')
 
 def redrawbuttons():
 	save_button.draw_button(WINDOW)
@@ -252,21 +271,37 @@ def message(msg, color, x, y):
 	WINDOW.blit(screen_text, (x, y))
 
 
+input_box = pygame.Rect(617, 6, 267, 35)
+
+
 def main(window, width):
 	#print(pygame.font.get_fonts())
+	print(os.listdir("C:/Users/Absaar/Documents/CodingStuff"))
+	colorbox = pygame.Color('LIGHTGREEN')
+	clock = pygame.time.Clock()
 	grid = make_grid(ROWS, width)
 	start = None
 	end = None
 	run = True
 	clicked = False
+	active = False
+	text = ''
+	txt_surface = font_box.render(text, True, BLACK)
 	while run:
-		draw(window, grid, ROWS, width)
+		draw(window, grid, ROWS, width, colorbox, txt_surface)
 		for event in pygame.event.get():
 
 			pos = pygame.mouse.get_pos()
 
 			if event.type == pygame.QUIT:
 				run = False
+
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				if input_box.collidepoint(event.pos):
+					active = True
+				else:
+					active = False
+
 
 			if event.type == pygame.MOUSEMOTION and clicked == False:
 				if save_button.isOver(pos):
@@ -290,10 +325,28 @@ def main(window, width):
 				clicked = False
 				if save_button.isOver(pos):
 					save_button.color = DARKGREY
-					print("lol")
+					pickle.dump(grid, open("grid", "wb"))
+					save_name = input("Give this grid a name\n")
+					with open(save_name, 'wb') as filehandle:	# store the data as binary data stream
+						pickle.dump(grid, filehandle)
+
 				if load_button.isOver(pos):
 					load_button.color = DARKGREY
-					print("hola")
+					grid = pickle.load(open("grid", "rb"))
+					grid_name = input("Enter the name of the grid you'd like to load\n")
+					with open(grid_name, 'rb') as filehandle:	# read the data as binary data stream
+						grid = pickle.load(filehandle)
+					#print(grid)
+					for row in grid:
+						for node in row:
+							if node.color == ORANGE:
+								start = node
+								start.make_start()
+							elif node.color == CYAN:
+								end = node
+								end.make_end()
+							elif node.color == BLACK:
+								node.make_barrier()
 
 
 			if pygame.mouse.get_pressed()[0]:	 #LEFT MOUSE BUTTON
@@ -327,18 +380,51 @@ def main(window, width):
 					end = None
 			
 			if event.type == pygame.KEYDOWN:
+				if active:
+					if event.key == pygame.K_RETURN:
+						print(text)
+						try:
+							with open(text, 'rb') as filehandle:	# read the data as binary data stream
+								grid = pickle.load(filehandle)
+						except:
+							pass
+						for row in grid:
+							for node in row:
+								if node.color == ORANGE:
+									start = node
+									start.make_start()
+								elif node.color == CYAN:
+									end = node
+									end.make_end()
+								elif node.color == BLACK:
+									node.make_barrier()
+						text = ''
+					elif event.key == pygame.K_BACKSPACE:
+						text = text[:-1]
+					else:
+						text += event.unicode
+
 				if event.key == pygame.K_SPACE and start and end:	 #SPACEBAR
 					for row in grid:
 						for node in row:
 							node.update_nieghbors(grid)
 
-					algorithm(lambda: draw(window, grid, ROWS, width), grid, start, end)
+					algorithm(lambda: draw(window, grid, ROWS, width, colorbox, txt_surface), grid, start, end)
 
 
 				if event.key == pygame.K_r:		 #KEY 'r'
 					start = None
 					end = None
 					grid = make_grid(ROWS, width)
+
+		if active:
+			colorbox = pygame.Color('GREEN')
+			txt_surface = font_box.render(text, True, BLACK)
+		else:
+			colorbox = pygame.Color('LIGHTGREEN')
+			txt_surface = font_box.render(text, True, GREY)
+
+		clock.tick(60)
 
 
 	pygame.quit()
