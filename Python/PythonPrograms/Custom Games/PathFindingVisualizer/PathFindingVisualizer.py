@@ -14,7 +14,6 @@ ROWS = 40
 WINDOW = pygame.display.set_mode((WIDTH_whole, HEIGHT))
 pygame.display.set_caption("A* Path Finding Visualizer")
 font_box = pygame.font.SysFont('ocraextended', 20)
-font_button = pygame.font.SysFont('ocraextended', 17, bold = 1)
 font_screen = pygame.font.SysFont('ocraextended', 13)
 
 RED = (255, 0, 0)
@@ -199,7 +198,6 @@ def draw(window, grid, rows, width, loadboxcolor, saveboxcolor, load_txt_surface
 			node.draw(window)
 
 	draw_gridlines(window, rows, width)
-	redrawbuttons()
 
 	pygame.draw.rect(WINDOW, loadboxcolor, load_box, 2)
 	pygame.draw.rect(WINDOW, saveboxcolor, save_box, 2)
@@ -231,45 +229,6 @@ def get_clicked_pos(pos, rows, width):
 	return row, col
 
 
-#BUTTONS
-
-
-class Button():
-	def __init__(self, color, x,y,width,height, text=''):
-		self.color = color
-		self.x = x
-		self.y = y
-		self.width = width
-		self.height = height
-		self.text = text
-
-	def draw_button(self,WINDOW,outline=GREY):
-		#Call this method to draw the button on the screen
-		if outline:
-			pygame.draw.rect(WINDOW, outline, (self.x-2,self.y-2,self.width+4,self.height+4),0)
-			
-		pygame.draw.rect(WINDOW, self.color, (self.x,self.y,self.width,self.height),0)
-		
-		if self.text != '':
-			text = font_button.render(self.text, 1, WHITE)
-			WINDOW.blit(text, (self.x + (self.width//2 - text.get_width()//2), self.y + (self.height//2 - text.get_height()//2)))
-
-	def isOver(self, pos):
-		#Pos is the mouse position or a tuple of (x,y) coordinates
-		if pos[0] > self.x and pos[0] < self.x + self.width:
-			if pos[1] > self.y and pos[1] < self.y + self.height:
-				return True
-			
-		return False
-
-
-save_button = Button(BLACK, 356, 610, 115, 40, 'Save Grid')
-load_button = Button(BLACK, 485, 610, 115, 40, 'Load Grid')
-
-def redrawbuttons():
-	save_button.draw_button(WINDOW)
-	load_button.draw_button(WINDOW)
-
 def message(msg, color, x, y):
 	screen_text = font_screen.render(msg, 1, color)
 	WINDOW.blit(screen_text, (x, y))
@@ -277,6 +236,7 @@ def message(msg, color, x, y):
 
 load_box = pygame.Rect(617, 6, 267, 35)
 save_box = pygame.Rect(617, 609, 267, 35)
+
 
 def main(window, width):
 	#print(pygame.font.get_fonts())
@@ -288,7 +248,6 @@ def main(window, width):
 	start = None
 	end = None
 	run = True
-	clicked = False
 	loadactive = False
 	saveactive = False
 	load_text = 'Enter to load grid'
@@ -322,52 +281,6 @@ def main(window, width):
 					saveactive = False
 					if save_text == '':
 						save_text = 'Enter to save grid'
-
-
-			if event.type == pygame.MOUSEMOTION and clicked == False:
-				if save_button.isOver(pos):
-					save_button.color = DARKGREY
-				else:
-					save_button.color = BLACK
-
-				if load_button.isOver(pos):
-					load_button.color = DARKGREY
-				else:
-					load_button.color = BLACK
-
-			if event.type == pygame.MOUSEBUTTONDOWN:
-				clicked = True
-				if save_button.isOver(pos):
-					save_button.color = DARKGREEN
-				if load_button.isOver(pos):
-					load_button.color = DARKGREEN
-
-			if event.type == pygame.MOUSEBUTTONUP:
-				clicked = False
-				if save_button.isOver(pos):
-					save_button.color = DARKGREY
-					pickle.dump(grid, open("grid", "wb"))
-					save_name = input("Give this grid a name\n")
-					with open(save_name, 'wb') as filehandle:	# store the data as binary data stream
-						pickle.dump(grid, filehandle)
-
-				if load_button.isOver(pos):
-					load_button.color = DARKGREY
-					grid = pickle.load(open("grid", "rb"))
-					grid_name = input("Enter the name of the grid you'd like to load\n")
-					with open(grid_name, 'rb') as filehandle:	# read the data as binary data stream
-						grid = pickle.load(filehandle)
-					#print(grid)
-					for row in grid:
-						for node in row:
-							if node.color == ORANGE:
-								start = node
-								start.make_start()
-							elif node.color == CYAN:
-								end = node
-								end.make_end()
-							elif node.color == BLACK:
-								node.make_barrier()
 
 
 			if pygame.mouse.get_pressed()[0]:	 #LEFT MOUSE BUTTON
@@ -468,7 +381,6 @@ def main(window, width):
 			saveboxcolor = pygame.Color('lightskyblue')
 			save_txt_surface = font_box.render(save_text, True, GREY)
 
-		clock.tick(60)
 
 
 	pygame.quit()
