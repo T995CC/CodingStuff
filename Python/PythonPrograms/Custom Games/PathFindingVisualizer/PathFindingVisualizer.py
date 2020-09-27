@@ -21,8 +21,8 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 LIGHTGREEN = (125, 255, 125)
 DARKGREEN = (0, 110, 0)
-BLUE = (0, 0, 255)
-LIGHTBLUE = (125, 125, 255)
+BLUE = (50, 50, 255)
+LIGHTBLUE = (50, 50, 255)
 YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -191,7 +191,7 @@ def draw_gridlines(window, rows, width):
 			pygame.draw.line(window, GREY, (j * gap, 0), (j * gap, width))
 
 
-def draw(window, grid, rows, width, colorbox, txt_surface):
+def draw(window, grid, rows, width, loadboxcolor, saveboxcolor, load_txt_surface, save_txt_surface):
 	window.fill(WHITE)
 
 	for row in grid:
@@ -201,18 +201,22 @@ def draw(window, grid, rows, width, colorbox, txt_surface):
 	draw_gridlines(window, rows, width)
 	redrawbuttons()
 
-	pygame.draw.rect(WINDOW, colorbox, input_box, 2)
-	WINDOW.blit(txt_surface, (input_box.x+5, input_box.y+5))
+	pygame.draw.rect(WINDOW, loadboxcolor, load_box, 2)
+	pygame.draw.rect(WINDOW, saveboxcolor, save_box, 2)
+	WINDOW.blit(load_txt_surface, (load_box.x+5, load_box.y+5))
+	WINDOW.blit(save_txt_surface, (save_box.x+5, save_box.y+5))
 
 	message(controls_text1, BLACK, 4, 603)
 	message(controls_text2, BLACK, 4, 616)
 	message(controls_text3, BLACK, 4, 629)
 	message(controls_text4, BLACK, 4, 642)
 
-	pygame.draw.line(window, GREY, (610, 0), (890, 0), 1)
-	pygame.draw.line(window, GREY, (610, 650), (890, 650), 1)
-	pygame.draw.line(window, GREY, (610, 0), (610, 650), 1)
-	pygame.draw.line(window, GREY, (890, 0), (890, 650), 1)
+	pygame.draw.line(window, GREY, (610, 0), (890, 0), 1)        #top
+	pygame.draw.line(window, GREY, (610, 47), (890, 47), 1)      #top second
+	pygame.draw.line(window, GREY, (610, 603), (890, 603), 1)    #bottom
+	pygame.draw.line(window, GREY, (610, 650), (890, 650), 1)    #bottom second
+	pygame.draw.line(window, GREY, (610, 0), (610, 650), 1)      #left
+	pygame.draw.line(window, GREY, (890, 0), (890, 650), 1)      #right
 	
 
 	pygame.display.update()
@@ -271,24 +275,28 @@ def message(msg, color, x, y):
 	WINDOW.blit(screen_text, (x, y))
 
 
-input_box = pygame.Rect(617, 6, 267, 35)
-
+load_box = pygame.Rect(617, 6, 267, 35)
+save_box = pygame.Rect(617, 609, 267, 35)
 
 def main(window, width):
 	#print(pygame.font.get_fonts())
 	print(os.listdir("C:/Users/Absaar/Documents/CodingStuff"))
-	colorbox = pygame.Color('LIGHTGREEN')
+	loadboxcolor = pygame.Color('LIGHTGREEN')
+	saveboxcolor = pygame.Color('lightskyblue')
 	clock = pygame.time.Clock()
 	grid = make_grid(ROWS, width)
 	start = None
 	end = None
 	run = True
 	clicked = False
-	active = False
-	text = ''
-	txt_surface = font_box.render(text, True, BLACK)
+	loadactive = False
+	saveactive = False
+	load_text = 'Enter to load grid'
+	save_text = 'Enter to save grid'
+	load_txt_surface = font_box.render(load_text, True, BLACK)
+	save_txt_surface = font_box.render(save_text, True, BLACK)
 	while run:
-		draw(window, grid, ROWS, width, colorbox, txt_surface)
+		draw(window, grid, ROWS, width, loadboxcolor, saveboxcolor, load_txt_surface, save_txt_surface)
 		for event in pygame.event.get():
 
 			pos = pygame.mouse.get_pos()
@@ -297,10 +305,23 @@ def main(window, width):
 				run = False
 
 			if event.type == pygame.MOUSEBUTTONDOWN:
-				if input_box.collidepoint(event.pos):
-					active = True
+				if load_box.collidepoint(event.pos):
+					loadactive = True
+					if load_text == 'Enter to load grid':
+						load_text = ''
 				else:
-					active = False
+					loadactive = False
+					if load_text == '':
+						load_text = 'Enter to load grid'
+
+				if save_box.collidepoint(event.pos):
+					saveactive = True
+					if save_text == 'Enter to save grid':
+						save_text = ''
+				else:
+					saveactive = False
+					if save_text == '':
+						save_text = 'Enter to save grid'
 
 
 			if event.type == pygame.MOUSEMOTION and clicked == False:
@@ -380,11 +401,11 @@ def main(window, width):
 					end = None
 			
 			if event.type == pygame.KEYDOWN:
-				if active:
+				if loadactive:
 					if event.key == pygame.K_RETURN:
-						print(text)
+						print(load_text)
 						try:
-							with open(text, 'rb') as filehandle:	# read the data as binary data stream
+							with open(load_text, 'rb') as filehandle:	# read the data as binary data stream
 								grid = pickle.load(filehandle)
 						except:
 							pass
@@ -398,31 +419,54 @@ def main(window, width):
 									end.make_end()
 								elif node.color == BLACK:
 									node.make_barrier()
-						text = ''
+						load_text = ''
 					elif event.key == pygame.K_BACKSPACE:
-						text = text[:-1]
+						load_text = load_text[:-1]
 					else:
-						text += event.unicode
+						load_text += event.unicode
 
-				if event.key == pygame.K_SPACE and start and end:	 #SPACEBAR
-					for row in grid:
-						for node in row:
-							node.update_nieghbors(grid)
+				if saveactive:
+					if event.key == pygame.K_RETURN:
+						print(save_text)
+						try:
+							with open(save_text, 'wb') as filehandle:	# store the data as binary data stream
+								pickle.dump(grid, filehandle)
+						except:
+							pass
+						save_text = ''
+					elif event.key == pygame.K_BACKSPACE:
+						save_text = save_text[:-1]
+					else:
+						save_text += event.unicode
 
-					algorithm(lambda: draw(window, grid, ROWS, width, colorbox, txt_surface), grid, start, end)
+				if not loadactive and not saveactive:
+					if event.key == pygame.K_SPACE and start and end:	 #SPACEBAR
+						for row in grid:
+							for node in row:
+								node.update_nieghbors(grid)
+
+						algorithm(lambda: draw(window, grid, ROWS, width, loadboxcolor, saveboxcolor, load_txt_surface, save_txt_surface), grid, start, end)
 
 
-				if event.key == pygame.K_r:		 #KEY 'r'
-					start = None
-					end = None
-					grid = make_grid(ROWS, width)
+					if event.key == pygame.K_r:		 #KEY 'r'
+						start = None
+						end = None
+						grid = make_grid(ROWS, width)
 
-		if active:
-			colorbox = pygame.Color('GREEN')
-			txt_surface = font_box.render(text, True, BLACK)
+		if loadactive:
+			loadboxcolor = pygame.Color('green')
+			load_txt_surface = font_box.render(load_text, True, BLACK)
 		else:
-			colorbox = pygame.Color('LIGHTGREEN')
-			txt_surface = font_box.render(text, True, GREY)
+			loadboxcolor = pygame.Color('lightgreen')
+			load_txt_surface = font_box.render(load_text, True, GREY)
+
+
+		if saveactive:
+			saveboxcolor = pygame.Color('dodgerblue')
+			save_txt_surface = font_box.render(save_text, True, BLACK)
+		else:
+			saveboxcolor = pygame.Color('lightskyblue')
+			save_txt_surface = font_box.render(save_text, True, GREY)
 
 		clock.tick(60)
 
