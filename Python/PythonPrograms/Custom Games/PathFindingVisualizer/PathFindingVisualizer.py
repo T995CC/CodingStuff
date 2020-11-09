@@ -16,6 +16,7 @@ pygame.display.set_caption("Path Finding Visualizer")
 font_box = pygame.font.SysFont('ocraextended', 20)
 font_button = pygame.font.SysFont('ocraextended', 18, bold = 1)
 font_screen = pygame.font.SysFont('ocraextended', 13)
+font_screen_1 = pygame.font.SysFont('ocraextended', 13, bold = 1)
 font_screen_2 = pygame.font.SysFont('ocraextended', 20)
 font_screen_list = pygame.font.SysFont('ocraextended', 17)
 
@@ -41,6 +42,45 @@ controls_text2 = 'RIGHT MOUSE CLICK: Remove Start/End/Barrier'
 controls_text3 = 'SPACEBAR: Start algorithm'
 controls_text4 = 'R: Reset Grid'
 list_heading = 'SAVED GRIDS'
+
+d1 = 'Path Finding is finding the'
+d2 = 'shortest possible path between two'
+d3 = 'given points.'
+d4 = 'This Path Finding Visualizer'
+d5 = 'presents it\'s working on a 2D grid'
+d6 = '(40x40) in an attractive manner.'
+d7 = 'It let\'s the user create their own'
+d8 = 'simple or complex grids and allows'
+d9 = 'the user to save any grid instead'
+d10 = 'of losing it after the program is'
+d11 = 'shut down.'
+d12 = 'CONTROLS'
+d13 = 'Left Mouse Click:'
+d14 = 'Left-clicking any grid box (node)'
+d15 = 'will make it the START NODE (  )'
+d16 = 'Left-clicking another node will'
+d17 = 'make that node the END NODE (  )'
+d18 = 'Any nodes clicked after will'
+d19 = 'become BARRIERS (  )'
+d20 = 'The algorithm will find the'
+d21 = 'shortest possible path from the'
+d22 = 'START NODE to the END NODE while'
+d23 = 'avoiding the BARRIERS.'
+d24 = 'Right Mouse Click:'
+d25 = 'Right-clicking any node will'
+d26 = 'revert it back to an EMPTY node.'
+d27 = 'Spacebar:'
+d28 = 'Hitting the Spacebar key after'
+d29 = 'creating a grid will run the'
+d30 = 'algorithm.'
+d31 = 'R:'
+d32 = 'Hitting the R key will clear the'
+d33 = 'grid.'
+d34 = 'TIP:'
+d35 = 'Save a grid before starting'
+d36 = 'the algorithm.'
+d_last = 'Press the button again to close'
+d_last1 = 'this window.'
 saved_list = []
 for file in os.listdir("."):
 	if "." in file or os.path.isdir(file):
@@ -219,26 +259,63 @@ def draw(window, grid, rows, width, loadboxcolor, saveboxcolor, deleteboxcolor, 
 	WINDOW.blit(save_txt_surface, (save_box.x+7, save_box.y+6))
 	WINDOW.blit(delete_txt_surface, (delete_box.x+7, delete_box.y+6))
 
-	# message(controls_text1, BLACK, 4, 603)
-	# message(controls_text2, BLACK, 4, 616)
-	# message(controls_text3, BLACK, 4, 629)
-	# message(controls_text4, BLACK, 4, 642)
-	#message2(list_heading, CYAN, 684, 98)
+	message(d1, BLACK, 897, 3)
+	message(d2, BLACK, 897, 16)
+	message(d3, BLACK, 897, 29)
+	message(d4, BLACK, 897, 55)
+	message(d5, BLACK, 897, 68)
+	message(d6, BLACK, 897, 81)
+	message(d7, BLACK, 897, 94)
+	message(d8, BLACK, 897, 107)
+	message(d9, BLACK, 897, 120)
+	message(d10, BLACK, 897, 133)
+	message(d11, BLACK, 897, 146)
+	message(d12, PURPLE, 897, 172)
+	message(d13, PURPLE, 897, 198)
+	message(d14, BLACK, 897, 211)
+	message(d15, BLACK, 897, 224)
+	message(d16, BLACK, 897, 237)
+	message(d17, BLACK, 897, 250)
+	message(d18, BLACK, 897, 263)
+	message(d19, BLACK, 897, 276)
+	message(d20, PURPLE, 897, 302)
+	message(d21, PURPLE, 897, 315)
+	message(d22, PURPLE, 897, 328)
+	message(d23, PURPLE, 897, 341)
+	message(d24, PURPLE, 897, 367)
+	message(d25, BLACK, 897, 380)
+	message(d26, BLACK, 897, 393)
+	message(d27, PURPLE, 897, 419)
+	message(d28, BLACK, 897, 432)
+	message(d29, BLACK, 897, 445)
+	message(d30, BLACK, 897, 458)
+	message(d31, PURPLE, 897, 484)
+	message(d32, BLACK, 897, 497)
+	message(d33, BLACK, 897, 510)
+	messagelast(d34, PURPLE, 897, 536)
+	message(d35, BLACK, 935, 536)
+	message(d36, BLACK, 935, 549)
+	messagelast(d_last, PURPLE, 895, 571)
+	messagelast(d_last1, PURPLE, 895, 584)
+
+	pygame.draw.rect(window, ORANGE, (1132,227,10,10))
+	pygame.draw.rect(window, CYAN, (1132,253,10,10))
+	pygame.draw.rect(window, BLACK, (1036,279,10,10))
+
 	message2(list_heading, BLACK, 680, 138)
 
 	messagelist(str(saved_list), PURPLE, 616, 166)
 
-	#pygame.draw.line(window, GREY, (610, 0), (890, 0), 1)		#top
-	#pygame.draw.line(window, GREY, (610, 47), (890, 47), 1)	  #top second
-	pygame.draw.line(window, GREY, (610, 135), (880, 135), 1)	  #top third
-	pygame.draw.line(window, GREY, (610, 163), (880, 163), 1)	  #top fourth
-	pygame.draw.line(window, GREY, (610, 555), (880, 555), 1)	#bottom
-	#pygame.draw.line(window, GREY, (0, 655), (600, 655), 1)	#bottom second
+
+	pygame.draw.line(window, GREY, (610, 135), (880, 135), 1)	  #top first
+	pygame.draw.line(window, GREY, (610, 163), (880, 163), 1)	  #top second
+	pygame.draw.line(window, GREY, (610, 555), (880, 555), 1)     #bottom
 	pygame.draw.line(window, GREY, (610, 135), (610, 555), 1)	  #left
 	pygame.draw.line(window, GREY, (880, 135), (880, 555), 1)	  #right
-	# pygame.draw.line(window, GREY, (300, 600), (300, 655), 1)   #save/delete separation
-	# pygame.draw.line(window, GREY, (600, 600), (600, 655), 1)   #right wall of delete
-	# pygame.draw.line(window, GREY, (0, 600), (0, 655), 1)   #left wall of save
+	pygame.draw.line(window, GREY, (890, 0), (1180, 0), 1)        #extra top
+	pygame.draw.line(window, GREY, (890, 600), (1180, 600), 1)    #extra bottom
+	pygame.draw.line(window, GREY, (890, 0), (890, 600), 1)       #extra left
+	pygame.draw.line(window, GREY, (1180, 0), (1180, 600), 1)     #extra right
 
 	pygame.display.update()
 
@@ -283,7 +360,7 @@ class Button():
 		return False
 
 
-ins_button = Button(BLACK, 611, 565, 269, 35, 'INSTRUCTIONS')
+ins_button = Button(BLACK, 611, 565, 269, 35, 'DETAILS / CONTROLS')
 
 def redrawbutton():
 	ins_button.draw_button(WINDOW)
@@ -291,6 +368,10 @@ def redrawbutton():
 def message(msg, color, x, y): 
 	screen_text = font_screen.render(msg, 1, color)
 	WINDOW.blit(screen_text, (x, y))
+
+def messagelast(msg, color, x, y): 
+	screen_text_1 = font_screen_1.render(msg, 1, color)
+	WINDOW.blit(screen_text_1, (x, y))
 
 def message2(msg, color, x, y): 
 	screen_text_2 = font_screen_2.render(msg, 1, color)
