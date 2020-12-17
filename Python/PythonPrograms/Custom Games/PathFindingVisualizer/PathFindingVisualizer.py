@@ -19,21 +19,28 @@ font_screen = pygame.font.SysFont('ocraextended', 13)
 font_screen_1 = pygame.font.SysFont('ocraextended', 13, bold = 1)
 font_screen_2 = pygame.font.SysFont('ocraextended', 20)
 font_screen_list = pygame.font.SysFont('ocraextended', 17)
+error_heading_font = pygame.font.SysFont('ocraextended', 14, bold = 1)
+error_sign_font = pygame.font.SysFont('calibri', 16, bold = 1)
+error_text_font = pygame.font.SysFont('ocraextended', 13)
 
+DARKRED = (220, 0, 0)
 RED = (255, 0, 0)
+LIGHTRED = (255, 90, 90)
 GREEN = (0, 255, 0)
 LIGHTGREEN = (51, 255, 51)
 LIGHTERGREEN = (102, 255, 102)
 DARKGREEN = (0, 200, 0)
-BLUE = (50, 50, 255)
+BLUE = (0, 0, 255)
 LIGHTBLUE = (90, 90, 255)
 YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 PURPLE = (128, 0, 128)
-ORANGE = (255, 165 ,0)
+PINK = (255, 210, 255)
+ORANGE = (255, 165, 0)
 GREY = (128, 128, 128)
 LIGHTGREY = (180, 180, 180)
+LIGHTERGREY = (250, 250, 250)
 DARKGREY = (40,40,40)
 CYAN = (64, 224, 250)	  #CUSTOM COLOR
 
@@ -68,16 +75,16 @@ d22 = 'START NODE to the END NODE while'
 d23 = 'avoiding the BARRIERS.'
 d24 = 'Right Mouse Click:'
 d25 = 'Right-clicking any node will'
-d26 = 'revert it back to an EMPTY node.'
+d26 = 'revert it back to an EMPTY NODE.'
 d27 = 'Spacebar:'
-d28 = 'Hitting the Spacebar key after'
+d28 = 'Pressing the Spacebar key after'
 d29 = 'creating a grid will run the'
 d30 = 'algorithm.'
-d31 = 'R:'
-d32 = 'Hitting the R key will clear the'
+d31 = 'Reset (R):'
+d32 = 'Pressing the R key will clear the'
 d33 = 'grid.'
 d34 = 'TIP:'
-d35 = 'Save a grid before starting'
+d35 = 'Save your grid before starting'
 d36 = 'the algorithm.'
 d_last = 'Press the button again to close'
 d_last1 = 'this window.'
@@ -86,6 +93,36 @@ for file in os.listdir("."):
 	if "." in file or os.path.isdir(file):
 		continue
 	saved_list.append(file)
+
+
+redsign = '?'
+greensign = '>'
+ortext = 'OR'
+closew = 'Close this window to continue'
+
+#Grid doesn't exist/incorrect TEXT
+errorheading1 = 'INVALID GRID NAME'
+error11 = ' Could not find requested grid'
+error12 = ' Make sure the grid you are trying to load is in'
+error13 = ' the \'SAVED GRIDS\' list'
+error14 = ' Spell check and capitalization check before'
+error15 = ' hitting ENTER because every entry is case'
+error16 = ' sensitive'
+
+#Grid exists with same name TEXT
+errorheading2 = 'DUPLICATE GRID NAME'
+error21 = ' Found another grid with same name'
+error22 = ' Delete existing grid'
+error23 = ' Give current grid another name'
+
+#When PATH does not exist
+errorheading3 = 'PATH VALIDATION FAILED'
+error31 = ' Path does not exist'
+error32 = ' Make sure the START NODE and the END NODE are'
+error33 = ' not completely isolated'
+error34 = ' This algorithm does not find path through'
+error35 = ' diagonal nodes'
+
 
 class Node:
 	def __init__(self, row, col, width, total_rows):
@@ -241,7 +278,7 @@ def draw_gridlines(window, rows, width):
 			pygame.draw.line(window, GREY, (j * gap, 0), (j * gap, width))
 
 
-def draw(window, grid, rows, width, loadboxcolor, saveboxcolor, deleteboxcolor, load_txt_surface, save_txt_surface, delete_txt_surface):
+def draw(window, grid, rows, width, loadboxcolor, saveboxcolor, deleteboxcolor, load_txt_surface, save_txt_surface, delete_txt_surface, error, GridNotExist, NameCopy, PathNotExist):
 	window.fill(WHITE)
 
 	for row in grid:
@@ -252,6 +289,9 @@ def draw(window, grid, rows, width, loadboxcolor, saveboxcolor, deleteboxcolor, 
 
 	redrawbutton()
 
+	if error == True:
+		errorbox(window, GridNotExist, NameCopy, PathNotExist)
+
 	pygame.draw.rect(WINDOW, loadboxcolor, load_box, 2)
 	pygame.draw.rect(WINDOW, saveboxcolor, save_box, 2)
 	pygame.draw.rect(WINDOW, deleteboxcolor, delete_box, 2)
@@ -259,9 +299,9 @@ def draw(window, grid, rows, width, loadboxcolor, saveboxcolor, deleteboxcolor, 
 	WINDOW.blit(save_txt_surface, (save_box.x+7, save_box.y+6))
 	WINDOW.blit(delete_txt_surface, (delete_box.x+7, delete_box.y+6))
 
-	message(d1, BLACK, 897, 3)
-	message(d2, BLACK, 897, 16)
-	message(d3, BLACK, 897, 29)
+	message(d1, PURPLE, 897, 3)
+	message(d2, PURPLE, 897, 16)
+	message(d3, PURPLE, 897, 29)
 	message(d4, BLACK, 897, 55)
 	message(d5, BLACK, 897, 68)
 	message(d6, BLACK, 897, 81)
@@ -292,15 +332,15 @@ def draw(window, grid, rows, width, loadboxcolor, saveboxcolor, deleteboxcolor, 
 	message(d31, PURPLE, 897, 484)
 	message(d32, BLACK, 897, 497)
 	message(d33, BLACK, 897, 510)
-	messagelast(d34, PURPLE, 897, 536)
-	message(d35, BLACK, 935, 536)
-	message(d36, BLACK, 935, 549)
-	messagelast(d_last, PURPLE, 895, 571)
-	messagelast(d_last1, PURPLE, 895, 584)
+	messagelast(d34, RED, 895, 536)
+	message(d35, DARKRED, 933, 536)
+	message(d36, DARKRED, 933, 549)
+	messagelast(d_last, PURPLE, 895, 570)
+	messagelast(d_last1, PURPLE, 895, 583)
 
-	pygame.draw.rect(window, ORANGE, (1132,227,10,10))
-	pygame.draw.rect(window, CYAN, (1132,253,10,10))
-	pygame.draw.rect(window, BLACK, (1036,279,10,10))
+	pygame.draw.rect(window, ORANGE, (1132, 227, 10, 10))
+	pygame.draw.rect(window, CYAN, (1132, 253, 10, 10))
+	pygame.draw.rect(window, BLACK, (1036, 279, 10, 10))
 
 	message2(list_heading, BLACK, 680, 138)
 
@@ -316,6 +356,7 @@ def draw(window, grid, rows, width, loadboxcolor, saveboxcolor, deleteboxcolor, 
 	pygame.draw.line(window, GREY, (890, 600), (1180, 600), 1)    #extra bottom
 	pygame.draw.line(window, GREY, (890, 0), (890, 600), 1)       #extra left
 	pygame.draw.line(window, GREY, (1180, 0), (1180, 600), 1)     #extra right
+
 
 	pygame.display.update()
 
@@ -350,6 +391,25 @@ class Button():
 		if self.text != '':
 			text = font_button.render(self.text, 1, BLACK)
 			WINDOW.blit(text, (self.x + (self.width//2 - text.get_width()//2), self.y + (self.height//2 - text.get_height()//2)))
+	
+	def er_button(self,WINDOW,outline=PURPLE):
+		#Call this method to draw the button on the screen
+		if outline:
+			pygame.draw.rect(WINDOW, outline, (self.x-1,self.y-1,self.width+3,self.height+3),0)
+			
+		pygame.draw.rect(WINDOW, self.color, (self.x,self.y,self.width,self.height),0)
+	
+	def close_button(self,WINDOW,outline=PURPLE):
+		#Call this method to draw the button on the screen
+		if outline:
+			pygame.draw.rect(WINDOW, outline, (self.x-1,self.y-1,self.width+2,self.height+2),0)
+			
+		pygame.draw.rect(WINDOW, self.color, (self.x,self.y,self.width,self.height),0)
+
+		if self.text != '':
+			text = font_button.render(self.text, 1, WHITE)
+			WINDOW.blit(text, (self.x + (self.width//2 - text.get_width()//2), self.y + (self.height//2 - text.get_height()//2) - 1))
+
 
 	def isOver(self, pos):
 		#Pos is the mouse position or a tuple of (x,y) coordinates
@@ -361,9 +421,25 @@ class Button():
 
 
 ins_button = Button(BLACK, 611, 565, 269, 35, 'DETAILS / CONTROLS')
+error_button = Button(LIGHTERGREY, 100, 220, 400, 160, '')
+x_button = Button(RED, 470, 220, 30, 19, 'x')
 
 def redrawbutton():
 	ins_button.draw_button(WINDOW)
+
+def errorbox(window, GridNotExist, NameCopy, PathNotExist):
+	error_button.er_button(WINDOW)
+	x_button.close_button(WINDOW)
+	pygame.draw.line(window, PURPLE, (100, 240), (500, 240), 1)
+	messagelast(closew, PURPLE, 105, 362)
+
+	if GridNotExist:
+		GridNotExist_text()
+	elif NameCopy:
+		NameCopy_text()
+	elif PathNotExist:
+		PathNotExist_text()
+
 
 def message(msg, color, x, y): 
 	screen_text = font_screen.render(msg, 1, color)
@@ -383,15 +459,62 @@ def messagelist(msg, color, x, y):
 		WINDOW.blit(screen_text_list, (x, y))
 		y += 17
 
+def errheading(msg, color, x, y): 
+	error_heading = error_heading_font.render(msg, 1, color)
+	WINDOW.blit(error_heading, (x, y))
+
+def errtext(msg, color, x, y): 
+	error_text = error_text_font.render(msg, 1, color)
+	WINDOW.blit(error_text, (x, y))
+
+def errsign(msg, color, x, y):
+	error_sign = error_sign_font.render(msg, 1, color)
+	WINDOW.blit(error_sign, (x, y))
+
 load_box = pygame.Rect(610, 45, 270, 35)
 save_box = pygame.Rect(610, 0, 270, 35)
 delete_box = pygame.Rect(610, 90, 270, 35)
+
+#All error text functions
+
+def GridNotExist_text():
+	errheading(errorheading1, RED, 104, 222)
+	errsign(redsign, RED, 104, 247)
+	errtext(error11, BLACK, 105, 246)
+	messagelast(greensign, DARKGREEN, 102, 274)
+	errtext(error12, BLACK, 105, 274)
+	errtext(error13, BLACK, 105, 288)
+	messagelast(greensign, DARKGREEN, 102, 302)
+	errtext(error14, BLACK, 105, 302)
+	errtext(error15, BLACK, 105, 316)
+	errtext(error16, BLACK, 105, 330)
+
+def NameCopy_text():
+	errheading(errorheading2, RED, 104, 222)
+	errsign(redsign, RED, 104, 247)
+	errtext(error21, BLACK, 105, 246)
+	messagelast(greensign, DARKGREEN, 102, 274)
+	errtext(error22, BLACK, 105, 274)
+	errtext(ortext, PURPLE, 102, 288)
+	messagelast(greensign, DARKGREEN, 102, 302)
+	errtext(error23, BLACK, 105, 302)
+
+def PathNotExist_text():
+	errheading(errorheading3, RED, 104, 222)
+	errsign(redsign, RED, 104, 247)
+	errtext(error31, BLACK, 105, 246)
+	messagelast(greensign, DARKGREEN, 102, 274)
+	errtext(error32, BLACK, 105, 274)
+	errtext(error33, BLACK, 105, 288)
+	messagelast(greensign, DARKGREEN, 102, 302)
+	errtext(error34, BLACK, 105, 302)
+	errtext(error35, BLACK, 105, 316)
 
 
 def main(window, width):
 	#print(pygame.font.get_fonts())
 	#print(os.listdir("."))
-	print(saved_list)
+	# (saved_list)
 	loadboxcolor = pygame.Color('lightgreen')
 	saveboxcolor = pygame.Color('lightskyblue')
 	deleteboxcolor = pygame.Color(255, 125, 125)
@@ -404,6 +527,12 @@ def main(window, width):
 	deleteactive = False
 	clicked = False
 	instructions = False
+	error = False
+	
+	GridNotExist = False
+	NameCopy = False
+	PathNotExist = False
+
 	load_text = 'Enter to load grid'
 	save_text = 'Enter to save grid'
 	delete_text = 'Enter to delete grid'
@@ -411,7 +540,7 @@ def main(window, width):
 	save_txt_surface = font_box.render(save_text, True, BLACK)
 	delete_txt_surface = font_box.render(delete_text, True, BLACK)
 	while run:
-		draw(window, grid, ROWS, width, loadboxcolor, saveboxcolor, deleteboxcolor, load_txt_surface, save_txt_surface, delete_txt_surface)
+		draw(window, grid, ROWS, width, loadboxcolor, saveboxcolor, deleteboxcolor, load_txt_surface, save_txt_surface, delete_txt_surface, error, GridNotExist, NameCopy, PathNotExist)
 		for event in pygame.event.get():
 
 			pos = pygame.mouse.get_pos()
@@ -425,16 +554,24 @@ def main(window, width):
 				else:
 					ins_button.color = LIGHTGREEN
 
+				if x_button.isOver(pos):
+					x_button.color = LIGHTRED
+				else:
+					x_button.color = RED
+
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				clicked = True
 				if ins_button.isOver(pos):
 					ins_button.color = DARKGREEN
 
+				if x_button.isOver(pos):
+					x_button.color = DARKRED
+
 			if event.type == pygame.MOUSEBUTTONUP:
 				clicked = False
 				if ins_button.isOver(pos):
 					ins_button.color = LIGHTERGREEN
-					print("Pressed ins button")
+					#print("Pressed ins button")
 					if instructions == False:
 						instructions = True
 						pygame.display.set_mode((1190, HEIGHT))
@@ -442,136 +579,170 @@ def main(window, width):
 						instructions = False
 						pygame.display.set_mode((WIDTH_whole, HEIGHT))
 
-			if event.type == pygame.MOUSEBUTTONDOWN:
-				if load_box.collidepoint(event.pos):
-					loadactive = True
-					if load_text == 'Enter to load grid':
-						load_text = ''
-				else:
-					loadactive = False
-					if load_text == '':
-						load_text = 'Enter to load grid'
+				if x_button.isOver(pos):
+					error = False
+					if GridNotExist:
+						GridNotExist = False
+					elif NameCopy:
+						NameCopy = False
+					elif PathNotExist:
+						PathNotExist = False
+					
 
-				if save_box.collidepoint(event.pos):
-					saveactive = True
-					if save_text == 'Enter to save grid':
-						save_text = ''
-				else:
-					saveactive = False
-					if save_text == '':
-						save_text = 'Enter to save grid'
+			if error == False:
 
-				if delete_box.collidepoint(event.pos):
-					deleteactive = True
-					if delete_text == 'Enter to delete grid':
-						delete_text = ''
-				else:
-					deleteactive = False
-					if delete_text == '':
-						delete_text = 'Enter to delete grid'
-
-
-			if pygame.mouse.get_pressed()[0]:	 #LEFT MOUSE BUTTON
-				pos1 = pygame.mouse.get_pos()
-				row, col = get_clicked_pos(pos1, ROWS, width)
-				try:
-					node = grid[row][col]
-				except:
-					continue
-				if not start and node != end:
-					start = node
-					start.make_start()
-				elif not end and node != start:
-					end = node
-					end.make_end()
-				elif node != start and node != end:
-					node.make_barrier()
-
-
-			elif pygame.mouse.get_pressed()[2]:   #RIGHT MOUSE BUTTON
-				pos1 = pygame.mouse.get_pos()
-				row, col = get_clicked_pos(pos1, ROWS, width)
-				try:
-					node = grid[row][col]
-				except:
-					continue
-				node.reset()
-				if node == start:
-					start = None
-				if node == end:
-					end = None
-			
-			if event.type == pygame.KEYDOWN:
-				if loadactive:
-					if event.key == pygame.K_RETURN:
-						#print(load_text)
-						try:
-							with open(load_text, 'rb') as filehandle:	# read the data as binary data stream
-								grid = pickle.load(filehandle)
-						except:
-							pass
-						for row in grid:
-							for node in row:
-								if node.color == ORANGE:
-									start = node
-									start.make_start()
-								elif node.color == CYAN:
-									end = node
-									end.make_end()
-								elif node.color == BLACK:
-									node.make_barrier()
-						load_text = ''
-					elif event.key == pygame.K_BACKSPACE:
-						load_text = load_text[:-1]
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					if load_box.collidepoint(event.pos):
+						loadactive = True
+						if load_text == 'Enter to load grid':
+							load_text = ''
 					else:
-						load_text += event.unicode
+						loadactive = False
+						if load_text == '':
+							load_text = 'Enter to load grid'
 
-				if saveactive:
-					if event.key == pygame.K_RETURN:
-						#print(save_text)
-						try:
-							with open(save_text, 'wb') as filehandle:	# store the data as binary data stream
-								pickle.dump(grid, filehandle)
-						except:
-							pass
-							
-						saved_list.append(save_text)
-						print(saved_list)
-						save_text = ''
-					elif event.key == pygame.K_BACKSPACE:
-						save_text = save_text[:-1]
+					if save_box.collidepoint(event.pos):
+						saveactive = True
+						if save_text == 'Enter to save grid':
+							save_text = ''
 					else:
-						save_text += event.unicode
+						saveactive = False
+						if save_text == '':
+							save_text = 'Enter to save grid'
 
-				if deleteactive:
-					if event.key == pygame.K_RETURN:
-						#print(delete_text)
-						try:
-							os.remove(delete_text)
-						except:
-							pass
-
-						saved_list.remove(delete_text)
-						print(saved_list)
-						delete_text = ''
-					elif event.key == pygame.K_BACKSPACE:
-						delete_text = delete_text[:-1]
+					if delete_box.collidepoint(event.pos):
+						deleteactive = True
+						if delete_text == 'Enter to delete grid':
+							delete_text = ''
 					else:
-						delete_text += event.unicode
-
-				if not loadactive and not saveactive:
-					if event.key == pygame.K_SPACE and start and end:	 #SPACEBAR
-						for row in grid:
-							for node in row:
-								node.update_nieghbors(grid)
-
-						algorithm(lambda: draw(window, grid, ROWS, width, loadboxcolor, saveboxcolor, deleteboxcolor, load_txt_surface, save_txt_surface, delete_txt_surface), grid, start, end)
+						deleteactive = False
+						if delete_text == '':
+							delete_text = 'Enter to delete grid'
 
 
-					if event.key == pygame.K_r:		 #KEY 'r'
+				if pygame.mouse.get_pressed()[0]:	 #LEFT MOUSE BUTTON
+					pos1 = pygame.mouse.get_pos()
+					row, col = get_clicked_pos(pos1, ROWS, width)
+					try:
+						node = grid[row][col]
+					except:
+						continue
+					if not start and node != end:
+						start = node
+						start.make_start()
+					elif not end and node != start:
+						end = node
+						end.make_end()
+					elif node != start and node != end:
+						node.make_barrier()
+
+
+				elif pygame.mouse.get_pressed()[2]:   #RIGHT MOUSE BUTTON
+					pos1 = pygame.mouse.get_pos()
+					row, col = get_clicked_pos(pos1, ROWS, width)
+					try:
+						node = grid[row][col]
+					except:
+						continue
+					node.reset()
+					if node == start:
 						start = None
+					if node == end:
 						end = None
-						grid = make_grid(ROWS, width)
+				
+				if event.type == pygame.KEYDOWN:
+					if loadactive:
+						if event.key == pygame.K_RETURN:
+							#print(load_text)
+							try:
+								with open(load_text, 'rb') as filehandle:	# read the data as binary data stream
+									grid = pickle.load(filehandle)
+							except:
+								error = True
+								GridNotExist = True
+								break
+							for row in grid:
+								for node in row:
+									if node.color == ORANGE:
+										start = node
+										start.make_start()
+									elif node.color == CYAN:
+										end = node
+										end.make_end()
+									elif node.color == BLACK:
+										node.make_barrier()
+									elif node.color == YELLOW or node.color == RED or node.color == GREEN:
+										node.reset()
+							load_text = ''
+						elif event.key == pygame.K_BACKSPACE:
+							load_text = load_text[:-1]
+						else:
+							if len(load_text) < 21:
+								load_text += event.unicode
+							else:
+								continue
+
+					if saveactive:
+						if event.key == pygame.K_RETURN:
+							if len(saved_list) < 22:
+								if save_text in saved_list:
+									error = True
+									NameCopy = True
+									break
+								#print(save_text)
+								try:
+									with open(save_text, 'wb') as filehandle:	# store the data as binary data stream
+										pickle.dump(grid, filehandle)
+								except:
+									pass
+								saved_list.append(save_text)
+								#print(saved_list)
+								save_text = ''
+							else:
+								print("no pls")
+						elif event.key == pygame.K_BACKSPACE:
+							save_text = save_text[:-1]
+						else:
+							if len(save_text) < 21:
+								save_text += event.unicode
+							else:
+								continue
+
+					if deleteactive:
+						if event.key == pygame.K_RETURN:
+							#print(delete_text)
+							try:
+								os.remove(delete_text)
+								saved_list.remove(delete_text)
+							except:
+								error = True
+								GridNotExist = True
+								break
+							#print(saved_list)
+							delete_text = ''
+						elif event.key == pygame.K_BACKSPACE:
+							delete_text = delete_text[:-1]
+						else:
+							if len(delete_text) < 21:
+								delete_text += event.unicode
+							else:
+								continue
+
+					if not loadactive and not saveactive and not deleteactive:
+						if event.key == pygame.K_SPACE and start and end:	 #SPACEBAR
+							for row in grid:
+								for node in row:
+									node.update_nieghbors(grid)
+
+							if not algorithm(lambda: draw(window, grid, ROWS, width, loadboxcolor, saveboxcolor, deleteboxcolor, load_txt_surface, save_txt_surface, delete_txt_surface, error, GridNotExist, NameCopy, PathNotExist), grid, start, end):
+								error = True
+								PathNotExist = True
+
+
+						if event.key == pygame.K_r:		 #KEY 'r'
+							start = None
+							end = None
+							grid = make_grid(ROWS, width)
 
 		if loadactive:
 			loadboxcolor = pygame.Color(0, 220, 0)
