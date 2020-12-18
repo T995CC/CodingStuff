@@ -11,8 +11,11 @@ WIDTH_whole = 890
 HEIGHT = 610
 
 ROWS = 40
+
 WINDOW = pygame.display.set_mode((WIDTH_whole, HEIGHT))
 pygame.display.set_caption("Path Finding Visualizer")
+
+#ALL FONT INITIALIZATIONS
 font_box = pygame.font.SysFont('ocraextended', 20)
 font_button = pygame.font.SysFont('ocraextended', 18, bold = 1)
 font_screen = pygame.font.SysFont('ocraextended', 13)
@@ -23,6 +26,7 @@ error_heading_font = pygame.font.SysFont('ocraextended', 14, bold = 1)
 error_sign_font = pygame.font.SysFont('calibri', 16, bold = 1)
 error_text_font = pygame.font.SysFont('ocraextended', 13)
 
+#ALL COLORS
 DARKRED = (220, 0, 0)
 RED = (255, 0, 0)
 LIGHTRED = (255, 90, 90)
@@ -44,6 +48,7 @@ LIGHTERGREY = (250, 250, 250)
 DARKGREY = (40,40,40)
 CYAN = (64, 224, 250)	  #CUSTOM COLOR
 
+#ALL TEXTS
 controls_text1 = 'LEFT MOUSE CLICK: Place Start/End/Barrier'
 controls_text2 = 'RIGHT MOUSE CLICK: Remove Start/End/Barrier'
 controls_text3 = 'SPACEBAR: Start algorithm'
@@ -88,12 +93,6 @@ d35 = 'Save your grid before starting'
 d36 = 'the algorithm.'
 d_last = 'Press the button again to close'
 d_last1 = 'this window.'
-saved_list = []
-for file in os.listdir("."):
-	if "." in file or os.path.isdir(file):
-		continue
-	saved_list.append(file)
-
 
 redsign = '?'
 greensign = '>'
@@ -122,6 +121,34 @@ error32 = ' Make sure the START NODE and the END NODE are'
 error33 = ' not completely isolated'
 error34 = ' This algorithm does not find path through'
 error35 = ' diagonal nodes'
+
+#When user tries to save a grid after running the algorithm
+errorheading4 = 'ILLEGAL SAVE ATTEMPT'
+error41 = 'Saving a grid after running the algorithm is'
+error42 = 'forbidden because it corrupts the node'
+error43 = 'addresses and their attributes'
+error44 = 'Definitely not because the developer was'
+error45 = 'too lazy to figure out why it did not work'
+
+#When the user has used every grid slot available
+errorheading5 = 'SAVED GRIDS LIMIT REACHED'
+error51 = ' Maximum number of grids saved'
+error52 = ' Delete existing grids'
+error53 = ' Lose the current grid'
+
+#When any entry has no alphanumeric text
+errorheading6 = 'EMPTY ENTRY'
+error61 = ' The entry was either empty or only had spaces'
+error62 = ' Don\'t do that'
+
+
+saved_list = []
+
+#EXTRACTING SAVED GRIDS' NAMES FROM FOLDER
+for file in os.listdir("."):
+	if "." in file or os.path.isdir(file):
+		continue
+	saved_list.append(file)
 
 
 class Node:
@@ -247,6 +274,7 @@ def algorithm(draw, grid, start, end):
 				if neighbor not in open_set_hash:
 					count += 1
 					open_set.put((f_score[neighbor], count, neighbor))
+
 					open_set_hash.add(neighbor)
 					neighbor.make_open()
 		
@@ -278,7 +306,7 @@ def draw_gridlines(window, rows, width):
 			pygame.draw.line(window, GREY, (j * gap, 0), (j * gap, width))
 
 
-def draw(window, grid, rows, width, loadboxcolor, saveboxcolor, deleteboxcolor, load_txt_surface, save_txt_surface, delete_txt_surface, error, GridNotExist, NameCopy, PathNotExist):
+def draw(window, grid, rows, width, loadboxcolor, saveboxcolor, deleteboxcolor, load_txt_surface, save_txt_surface, delete_txt_surface, error, GridNotExist, NameCopy, PathNotExist, IllegalSave, SaveLimit, EmptyEntry):
 	window.fill(WHITE)
 
 	for row in grid:
@@ -290,7 +318,7 @@ def draw(window, grid, rows, width, loadboxcolor, saveboxcolor, deleteboxcolor, 
 	redrawbutton()
 
 	if error == True:
-		errorbox(window, GridNotExist, NameCopy, PathNotExist)
+		errorbox(window, GridNotExist, NameCopy, PathNotExist, IllegalSave, SaveLimit, EmptyEntry)
 
 	pygame.draw.rect(WINDOW, loadboxcolor, load_box, 2)
 	pygame.draw.rect(WINDOW, saveboxcolor, save_box, 2)
@@ -344,7 +372,7 @@ def draw(window, grid, rows, width, loadboxcolor, saveboxcolor, deleteboxcolor, 
 
 	message2(list_heading, BLACK, 680, 138)
 
-	messagelist(str(saved_list), PURPLE, 616, 166)
+	messagelist(str(saved_list), PURPLE, 616, 168)
 
 
 	pygame.draw.line(window, GREY, (610, 135), (880, 135), 1)	  #top first
@@ -427,7 +455,7 @@ x_button = Button(RED, 470, 220, 30, 19, 'x')
 def redrawbutton():
 	ins_button.draw_button(WINDOW)
 
-def errorbox(window, GridNotExist, NameCopy, PathNotExist):
+def errorbox(window, GridNotExist, NameCopy, PathNotExist, IllegalSave, SaveLimit, EmptyEntry):
 	error_button.er_button(WINDOW)
 	x_button.close_button(WINDOW)
 	pygame.draw.line(window, PURPLE, (100, 240), (500, 240), 1)
@@ -439,6 +467,12 @@ def errorbox(window, GridNotExist, NameCopy, PathNotExist):
 		NameCopy_text()
 	elif PathNotExist:
 		PathNotExist_text()
+	elif IllegalSave:
+		IllegalSave_text()
+	elif SaveLimit:
+		SaveLimit_text()
+	elif EmptyEntry:
+		EmptyEntry_text()
 
 
 def message(msg, color, x, y): 
@@ -457,7 +491,7 @@ def messagelist(msg, color, x, y):
 	for word in saved_list:
 		screen_text_list = font_screen_list.render(word, 1, color)
 		WINDOW.blit(screen_text_list, (x, y))
-		y += 17
+		y += 18
 
 def errheading(msg, color, x, y): 
 	error_heading = error_heading_font.render(msg, 1, color)
@@ -510,6 +544,31 @@ def PathNotExist_text():
 	errtext(error34, BLACK, 105, 302)
 	errtext(error35, BLACK, 105, 316)
 
+def IllegalSave_text():
+	errheading(errorheading4, RED, 104, 222)
+	errtext(error41, PURPLE, 105, 246)
+	errtext(error42, PURPLE, 105, 260)
+	errtext(error43, PURPLE, 105, 274)
+	errtext(error44, PURPLE, 105, 302)
+	errtext(error45, PURPLE, 105, 316)
+
+def SaveLimit_text():
+	errheading(errorheading5, RED, 104, 222)
+	errsign(redsign, RED, 104, 247)
+	errtext(error51, BLACK, 105, 246)
+	messagelast(greensign, DARKGREEN, 102, 274)
+	errtext(error52, BLACK, 105, 274)
+	errtext(ortext, PURPLE, 102, 288)
+	messagelast(greensign, DARKGREEN, 102, 302)
+	errtext(error53, BLACK, 105, 302)
+
+def EmptyEntry_text():
+	errheading(errorheading6, RED, 104, 222)
+	errsign(redsign, RED, 104, 247)
+	errtext(error61, BLACK, 105, 246)
+	messagelast(greensign, DARKGREEN, 102, 274)
+	errtext(error62, BLACK, 105, 274)
+
 
 def main(window, width):
 	#print(pygame.font.get_fonts())
@@ -532,6 +591,9 @@ def main(window, width):
 	GridNotExist = False
 	NameCopy = False
 	PathNotExist = False
+	IllegalSave = False
+	SaveLimit = False
+	EmptyEntry = False
 
 	load_text = 'Enter to load grid'
 	save_text = 'Enter to save grid'
@@ -540,7 +602,7 @@ def main(window, width):
 	save_txt_surface = font_box.render(save_text, True, BLACK)
 	delete_txt_surface = font_box.render(delete_text, True, BLACK)
 	while run:
-		draw(window, grid, ROWS, width, loadboxcolor, saveboxcolor, deleteboxcolor, load_txt_surface, save_txt_surface, delete_txt_surface, error, GridNotExist, NameCopy, PathNotExist)
+		draw(window, grid, ROWS, width, loadboxcolor, saveboxcolor, deleteboxcolor, load_txt_surface, save_txt_surface, delete_txt_surface, error, GridNotExist, NameCopy, PathNotExist, IllegalSave, SaveLimit, EmptyEntry)
 		for event in pygame.event.get():
 
 			pos = pygame.mouse.get_pos()
@@ -587,6 +649,13 @@ def main(window, width):
 						NameCopy = False
 					elif PathNotExist:
 						PathNotExist = False
+					elif IllegalSave:
+						IllegalSave = False
+						os.remove(save_text)
+					elif SaveLimit:
+						SaveLimit = False
+					elif EmptyEntry:
+						EmptyEntry = False
 					
 
 			if error == False:
@@ -653,6 +722,10 @@ def main(window, width):
 				if event.type == pygame.KEYDOWN:
 					if loadactive:
 						if event.key == pygame.K_RETURN:
+							if load_text == '' or load_text.isspace():
+								error = True
+								EmptyEntry = True
+								break
 							#print(load_text)
 							try:
 								with open(load_text, 'rb') as filehandle:	# read the data as binary data stream
@@ -684,22 +757,29 @@ def main(window, width):
 
 					if saveactive:
 						if event.key == pygame.K_RETURN:
-							if len(saved_list) < 22:
+							if save_text == '' or save_text.isspace():
+								error = True
+								EmptyEntry = True
+								break
+
+							if len(saved_list) < 21:
 								if save_text in saved_list:
 									error = True
 									NameCopy = True
 									break
-								#print(save_text)
 								try:
 									with open(save_text, 'wb') as filehandle:	# store the data as binary data stream
 										pickle.dump(grid, filehandle)
 								except:
-									pass
+									error = True
+									IllegalSave = True
+									break
 								saved_list.append(save_text)
 								#print(saved_list)
-								save_text = ''
 							else:
-								print("no pls")
+								error = True
+								SaveLimit = True
+								break
 						elif event.key == pygame.K_BACKSPACE:
 							save_text = save_text[:-1]
 						else:
@@ -710,6 +790,10 @@ def main(window, width):
 
 					if deleteactive:
 						if event.key == pygame.K_RETURN:
+							if delete_text == '' or delete_text.isspace():
+								error = True
+								EmptyEntry = True
+								break
 							#print(delete_text)
 							try:
 								os.remove(delete_text)
@@ -732,9 +816,13 @@ def main(window, width):
 						if event.key == pygame.K_SPACE and start and end:	 #SPACEBAR
 							for row in grid:
 								for node in row:
+									if node.color == YELLOW or node.color == RED or node.color == GREEN:
+										node.reset()
+							for row in grid:
+								for node in row:
 									node.update_nieghbors(grid)
 
-							if not algorithm(lambda: draw(window, grid, ROWS, width, loadboxcolor, saveboxcolor, deleteboxcolor, load_txt_surface, save_txt_surface, delete_txt_surface, error, GridNotExist, NameCopy, PathNotExist), grid, start, end):
+							if not algorithm(lambda: draw(window, grid, ROWS, width, loadboxcolor, saveboxcolor, deleteboxcolor, load_txt_surface, save_txt_surface, delete_txt_surface, error, GridNotExist, NameCopy, PathNotExist, IllegalSave, SaveLimit, EmptyEntry), grid, start, end):
 								error = True
 								PathNotExist = True
 
